@@ -9,9 +9,10 @@ module Bigint = struct
     let  radix    = 10
     let  radixlen =  1
 
-    let car       = List.hd
-    let cdr       = List.tl
+    (* let car       = List.hd
+    let cdr       = List.tl *)
     let map       = List.map
+    let mapi      = List.mapi
     let reverse   = List.rev
     let strcat    = String.concat
     let strlen    = String.length
@@ -44,9 +45,14 @@ module Bigint = struct
         | value -> let reversed = reverse value
                    in  strcat ""
                        ((if sign = Pos then "" else "-") ::
-                        (map string_of_int reversed))
+                        let checkthing index v =
+                            if index > 0 && index mod 70 = 69
+                            then "\\\n" ^ (string_of_int v)
+                            else string_of_int v in
+                        (mapi checkthing reversed))
 
     let rec cmp' list1 list2 = match (list1, list2) with
+        | [], []                    -> 0
         | list1, []                 -> 1
         | [], list2                 -> -1
         | car1::cdr1, car2::cdr2    ->
@@ -120,7 +126,10 @@ module Bigint = struct
         if neg1 = neg2
         then Bigint (Pos, mul' value1 value2)
         else Bigint (Neg, mul' value1 value2) *)
-    let mul = add
+    
+    let mul (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
+        (Printf.printf "hello: %d\n" (cmp' value1 value2));
+        Bigint (Pos, [])
 
     let div = add
 
