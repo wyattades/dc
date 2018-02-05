@@ -25,7 +25,11 @@ let storereg (thestack: stack_t) (reg: int) =
 
 let loadreg (thestack: stack_t) (reg: int) =
     let vals = regs.(reg) in
-    if vals = [] then printf "dc: register '%c' (0%o) is empty\n" (char_of_int reg) reg
+    if vals = [] 
+    then printf 
+        "dc: register '%c' (0%o) is empty\n" 
+        (char_of_int reg) 
+        reg
     else push (List.hd vals) thestack
 
 let executereg (thestack: stack_t) (oper: char) (reg: int) =

@@ -97,8 +97,6 @@ module Bigint = struct
                 in  dif mod radix :: trim' (sub' cdr1 cdr2 0)
 
     let double value = add' value value 0   
-    
-    let myprint key value = (Printf.printf "%s: %s\n" key (string_of_bigint (Bigint (Pos, value))))
 
     let rec get_bin_values max vals bins =
         let next = double (car bins) in
@@ -108,13 +106,21 @@ module Bigint = struct
     let rec mul' vals bins max res =
         if bins = [] then res
          else (if (cmp max (car bins)) >= 0
-            then mul' (cdr vals) (cdr bins) (sub' max (car bins) 0) (add' res (car vals) 0)
+            then mul' 
+                (cdr vals)
+                (cdr bins)
+                (sub' max (car bins) 0)
+                (add' res (car vals) 0)
             else mul' (cdr vals) (cdr bins) max res)
 
     let rec div' vals bins quot remain =
         if bins = [] then (quot, remain)
         else (if (cmp remain (car vals)) >= 0
-            then div' (cdr vals) (cdr bins) (add' quot (car bins) 0) (sub' remain (car vals) 0)
+            then div' 
+                (cdr vals)
+                (cdr bins)
+                (add' quot (car bins) 0)
+                (sub' remain (car vals) 0)
             else div' (cdr vals) (cdr bins) quot remain
         )
 
@@ -131,7 +137,9 @@ module Bigint = struct
         if neg1 = neg2
         then (if (cmp value1 value2) > 0
             then Bigint (neg1, trim' (sub' value1 value2 0))
-            else Bigint ((if neg1 = Pos then Neg else Pos), trim' (sub' value2 value1 0)))
+            else Bigint (
+                (if neg1 = Pos then Neg else Pos), 
+                trim' (sub' value2 value1 0)))
         else if neg1 = Neg 
         then Bigint (Neg, add' value2 value1 0)
         else if neg2 = Neg
@@ -144,25 +152,25 @@ module Bigint = struct
         let bigger = (if compared > 0 then value1 else value2) in
         let vals, bins = get_bin_values smaller [bigger] [[1]] in
 
-        Bigint ((if neg1 = neg2 then Pos else Neg), (mul' vals bins smaller []))
+        Bigint (
+            (if neg1 = neg2 then Pos else Neg),
+            (mul' vals bins smaller []))
 
     let div (Bigint (neg1, numer)) (Bigint (neg2, denom)) =
-        (* if denom = [] then ((Printf.printf "aAAAAAAAAAAAAAAAAH!\n"); zero)
-        else  *)
         match (cmp numer denom) with
             | -1 -> zero
             | 0  -> Bigint (Pos, [1])
-            | _  -> let vals, bins = get_bin_values numer [denom] [[1]] in
+            | _  -> let vals, bins = 
+                        get_bin_values numer [denom] [[1]] in
                     let quot, remain = div' vals bins [] numer in
                     Bigint((if neg1 = neg2 then Pos else Neg), quot)
 
     let rem (Bigint (neg1, numer)) (Bigint (neg2, denom)) =
-        (* if denom = [] then ((Printf.printf "aAAAAAAAAAAAAAAAAH!\n"); zero)
-        else  *)
         match (cmp numer denom) with
             | -1 -> Bigint (neg1, numer)
             | 0  -> zero
-            | _  -> let vals, bins = get_bin_values numer [denom] [[1]] in
+            | _  -> let vals, bins = 
+                        get_bin_values numer [denom] [[1]] in
                     let quot, remain = div' vals bins [] numer in
                     Bigint(neg1, remain)
 
@@ -175,7 +183,9 @@ module Bigint = struct
             let vals, bins = get_bin_values value2 [[2]] [[1]] in
             let quot, remain = div' vals bins [] value2 in
             (if remain = [1] 
-                then mul (pow (mul base base) (Bigint (neg1, quot))) base
+                then mul
+                        (pow (mul base base) (Bigint (neg1, quot))) 
+                        base
                 else pow (mul base base) (Bigint (neg1, quot)))
         )
     
