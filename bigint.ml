@@ -83,8 +83,8 @@ module Bigint = struct
         | list1, [], carry   -> add' list1 [carry] 0
         | [], list2, carry   -> add' [carry] list2 0
         | car1::cdr1, car2::cdr2, carry ->
-          let sum = car1 + car2 + carry
-          in  sum mod radix :: add' cdr1 cdr2 (sum / radix)
+            let sum = car1 + car2 + carry
+            in  sum mod radix :: add' cdr1 cdr2 (sum / radix)
 
     let rec sub' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
@@ -100,7 +100,7 @@ module Bigint = struct
 
     let double value = add' value value 0   
     
-    (* let myprint key value = (Printf.printf "%s: %s\n" key (string_of_bigint (Bigint (Pos, value)))) *)
+    let myprint key value = (Printf.printf "%s: %s\n" key (string_of_bigint (Bigint (Pos, value))))
 
     let rec get_mul_values max vals bins =
         let next = double (car bins) in
@@ -108,11 +108,10 @@ module Bigint = struct
         else get_mul_values max ((double (car vals))::vals) (next::bins)
         
     let rec mul' vals bins max res =
-        (* myprint "max" max; myprint "res" res; myprint "bin" (car bins); myprint "val" (car vals); *)
         if bins = [] then res
-        else (if max >= (car bins)
+         else (if (cmp max (car bins)) >= 0
             then mul' (cdr vals) (cdr bins) (sub' max (car bins) 0) (add' res (car vals) 0)
-            else  mul' (cdr vals) (cdr bins) max res)
+            else mul' (cdr vals) (cdr bins) max res)
 
     let add (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
         if neg1 = neg2
@@ -120,6 +119,7 @@ module Bigint = struct
         else match (cmp value1 value2) with
             | 1  -> Bigint(neg1, trim' (sub' value1 value2 0))
             | -1 -> Bigint(neg2, trim' (sub' value2 value1 0))
+            | 0 -> Bigint(neg2, trim' (sub' value2 value1 0))
             | _  -> zero
 
     let sub (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
