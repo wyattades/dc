@@ -1,4 +1,4 @@
-(* $Id: maindc.ml,v 1.5 2017-04-07 13:24:41-07 - - $ *)
+(* wades Wyatt Ades, lnwhite Lee White *)
 
 include Scanner
 include Bigint

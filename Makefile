@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.16 2018-01-24 15:57:37-08 - - $
+# wades Wyatt Ades, lnwhite Lee White
 
 DEPSFILE  = Makefile.deps
 NOINCLUDE = ci clean spotless
