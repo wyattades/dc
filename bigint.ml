@@ -9,8 +9,8 @@ module Bigint = struct
     let  radix    = 10
     let  radixlen =  1
 
-    (* let car       = List.hd
-    let cdr       = List.tl *)
+    let car       = List.hd
+    let cdr       = List.tl
     let map       = List.map
     let mapi      = List.mapi
     let reverse   = List.rev
@@ -45,22 +45,28 @@ module Bigint = struct
         | value -> let reversed = reverse value
                    in  strcat ""
                        ((if sign = Pos then "" else "-") ::
-                        let checkthing index v =
+                        let checklength index v =
                             if index > 0 && index mod 70 = 69
                             then "\\\n" ^ (string_of_int v)
                             else string_of_int v in
-                        (mapi checkthing reversed))
+                        (mapi checklength reversed))
 
     let rec cmp' list1 list2 = match (list1, list2) with
         | [], []                    -> 0
         | list1, []                 -> 1
         | [], list2                 -> -1
         | car1::cdr1, car2::cdr2    ->
-            if car1 > car2
+            if car1 > car2 
             then 1
             else if car2 > car1
             then -1
             else cmp' cdr1 cdr2
+
+    let cmp list1 list2 = 
+        let diff = List.length list1 - List.length list2 in
+        if diff > 0 then 1
+        else if diff < 0 then -1
+        else cmp' (reverse list1) (reverse list2)
 
     let rec trim' list' = match list' with
         | []        -> []
@@ -92,44 +98,48 @@ module Bigint = struct
             else let dif = car1 - car2 - carry
                 in  dif mod radix :: trim' (sub' cdr1 cdr2 0)
 
-(*     let rec mul' list1 list2 = match (list1, list2) with
-        |  *)
+    let double value = add' value value 0   
+    
+    (* let myprint key value = (Printf.printf "%s: %s\n" key (string_of_bigint (Bigint (Pos, value)))) *)
 
-
-
+    let rec get_mul_values max vals bins =
+        let next = double (car bins) in
+        if cmp next max > 0 then (vals, bins)
+        else get_mul_values max ((double (car vals))::vals) (next::bins)
+        
+    let rec mul' vals bins max res =
+        (* myprint "max" max; myprint "res" res; myprint "bin" (car bins); myprint "val" (car vals); *)
+        if bins = [] then res
+        else (if max >= (car bins)
+            then mul' (cdr vals) (cdr bins) (sub' max (car bins) 0) (add' res (car vals) 0)
+            else  mul' (cdr vals) (cdr bins) max res)
 
     let add (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
         if neg1 = neg2
         then Bigint (neg1, add' value1 value2 0)
-        else if neg1 = Neg
-        then (if (cmp' value1 value2) < 0
-            then Bigint (Neg, trim' (sub' value1 value2 0))
-            else Bigint (Pos, trim' (sub' value2 value1 0)))
-        else if neg2 = Neg
-        then (if (cmp' value1 value2) < 0
-            then Bigint (Pos, trim' (sub' value1 value2 0))
-            else Bigint (Neg, trim' (sub' value2 value1 0)))
-        else zero
+        else match (cmp value1 value2) with
+            | 1  -> Bigint(neg1, trim' (sub' value1 value2 0))
+            | -1 -> Bigint(neg2, trim' (sub' value2 value1 0))
+            | _  -> zero
 
     let sub (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
         if neg1 = neg2
-        then (if (cmp' value1 value2) < 0
+        then (if (cmp value1 value2) > 0
             then Bigint (neg1, trim' (sub' value1 value2 0))
-            else Bigint (neg1, trim' (sub' value2 value1 0)))
+            else Bigint ((if neg1 = Pos then Neg else Pos), trim' (sub' value2 value1 0)))
         else if neg1 = Neg 
         then Bigint (Neg, add' value2 value1 0)
         else if neg2 = Neg
         then Bigint (Pos, add' value1 value2 0)
         else zero
-
-    (* let mul (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
-        if neg1 = neg2
-        then Bigint (Pos, mul' value1 value2)
-        else Bigint (Neg, mul' value1 value2) *)
     
     let mul (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
-        (Printf.printf "hello: %d\n" (cmp' value1 value2));
-        Bigint (Pos, [])
+        let compared = cmp value1 value2 in
+        let smaller = (if compared > 0 then value2 else value1) in
+        let bigger = (if compared > 0 then value1 else value2) in
+        let vals, bins = get_mul_values smaller [bigger] [[1]] in
+
+        Bigint ((if neg1 = neg2 then Pos else Neg), (mul' vals bins smaller []))
 
     let div = add
 
