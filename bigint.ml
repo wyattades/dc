@@ -42,14 +42,12 @@ module Bigint = struct
     let string_of_bigint (Bigint (sign, value)) =
         match value with
         | []    -> "0"
-        | value -> let reversed = reverse value
-                   in  strcat ""
-                       ((if sign = Pos then "" else "-") ::
-                        let checklength index v =
-                            if index > 0 && (index mod 70) = 68
-                            then (string_of_int v) ^ "\\\n"
-                            else string_of_int v in
-                        (mapi checklength reversed))
+        | value -> let reversed = reverse value in strcat ""
+                    ((if sign = Pos then "" else "-") ::
+                    (mapi (fun index v ->
+                        if index > 0 && (index mod 69) = 68
+                        then (string_of_int v) ^ "\\\n"
+                        else string_of_int v) reversed))
 
     let rec cmp' list1 list2 = match (list1, list2) with
         | [], []                    -> 0
